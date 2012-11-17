@@ -1,0 +1,399 @@
+package ar.edu.itba.pod.legajo51071.impl;
+
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.concurrent.GuardedBy;
+
+import org.jgroups.Address;
+import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.ReceiverAdapter;
+import org.jgroups.View;
+
+import com.google.common.collect.Lists;
+
+import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.legajo51071.impl.msg.AckMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.BackupAckMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.BackupMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.ClusterMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.DegradedMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.ForgetBackupAckMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.ForgetBackupMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.ForwardAckMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.ForwardMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.NewNodeForwardAckMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.NewNodeForwardMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.NotDegradedMessage;
+import ar.edu.itba.pod.legajo51071.impl.msg.SyncMessage;
+
+public class ClusterProcessor extends ReceiverAdapter {
+	private JChannel channel;
+	private String clusterName;
+	private volatile View group = null;
+	private volatile ConcurrentLinkedQueue<Address> others;
+	final ClusterBalancer balancer;
+	final ConcurrentHashMap<Address, ConcurrentLinkedQueue<Signal>> backups = new ConcurrentHashMap<>();
+	final ConcurrentLinkedQueue<Signal> toShare = new ConcurrentLinkedQueue<>();
+	final AtomicInteger backupSignals = new AtomicInteger();
+	final ClusterSignalProcessor csp;
+	final LocalProcessor local;
+	
+	private final CountDownLatch ready = new CountDownLatch(1); 
+	private AtomicInteger newNodeMsgsRcvd = new AtomicInteger();
+	private final AtomicBoolean isNew = new AtomicBoolean();
+	
+	private volatile Random rnd = new Random(System.currentTimeMillis());
+	
+	private final AtomicBoolean degraded = new AtomicBoolean();
+	
+	ExecutorService processMessages = Executors.newFixedThreadPool(1);
+	ExecutorService processAcks = Executors.newFixedThreadPool(1);
+	ExecutorService processSyncs = Executors.newFixedThreadPool(1);
+	
+	ExecutorService inOrderViewChanges = Executors.newFixedThreadPool(1);
+	
+	
+	public ClusterProcessor(ClusterSignalProcessor csp, LocalProcessor local, String clusterName) throws Exception {
+		this.clusterName = clusterName;
+		balancer = new ClusterBalancer(this);
+		this.local = local;
+		this.csp = csp;
+		this.start();
+	}
+	
+	private void start() throws Exception {
+
+		channel=new JChannel(); // use the default config, udp.xml
+		channel.setReceiver(this);
+		channel.setDiscardOwnMessages(true);
+		channel.connect(clusterName);
+
+	}
+
+	public void viewAccepted(final View new_view) {
+		final ClusterProcessor self = this;
+		inOrderViewChanges.execute(new Runnable() {
+			@Override
+			public void run() {
+				if(group == null){
+					group = new_view;
+					if(group.size()!=1){
+						ConcurrentLinkedQueue<Address> others = new ConcurrentLinkedQueue<>();
+						for(Address a:group.getMembers()){
+							if(!a.equals(getNodeId())) others.add(a);
+						}
+						self.others = others;
+						System.out.println("I am the new node");
+						newNodeMsgsRcvd.addAndGet(others.size());
+						isNew.set(true);
+						viewChangedDegraded();
+						ready.countDown();
+						balancer.timerEnabledOn();
+//						localDegradedFinished();
+					}else if(group.size()==1){
+						System.out.println("I am the first");
+						ready.countDown();
+					}
+				}else{
+					if(group.size()<new_view.size()){
+						ConcurrentLinkedQueue<Address> newMembers = new ConcurrentLinkedQueue<>();
+						for(Address a: new_view.getMembers()){
+							if(!group.containsMember(a))	newMembers.add(a);
+						}
+						System.out.println("new nodes: " + newMembers);
+						balance(newMembers.poll(), new_view.size());
+					}
+					if(group.size()>new_view.size()){
+						Address left = null;
+						int k = 0;
+						for(Address m: group.getMembers()){
+							if(!new_view.containsMember(m)){
+								left=m;
+								k++;
+							}
+						}
+						if(k>1) System.out.println("Signals were lost :(");
+						System.out.println("left node: " + left);
+						storeAndBackup(left);
+					}
+					group = new_view;
+					viewChangedDegraded();
+					ConcurrentLinkedQueue<Address> others = new ConcurrentLinkedQueue<>();
+					for(Address a:group.getMembers()){
+						if(!a.equals(getNodeId())) others.add(a);
+					}
+					self.others = others;
+					balancer.decreaseLocalDegradedCount();
+					balancer.timerEnabledOn();
+				}
+				
+				System.out.println("** view: " + new_view);
+				
+			}
+		});
+		
+		
+
+	}
+
+
+	private void storeAndBackup(Address left) {
+//		degradedStarted();
+//		balancer.nodeLeft(left);
+		System.out.println("store and backup" + left);
+		
+	}
+
+	public void receive(Message msg) {
+		
+		System.out.println("se recibe de: " + msg.getSrc() + ": " + msg.getObject());
+		final Address src = msg.getSrc();
+		final ClusterMessage m = (ClusterMessage) msg.getObject();
+		if(m instanceof SyncMessage){
+			processSyncs.execute(new Runnable() {
+				
+				@Override
+				public void run() {
+					try {
+						ready.await();
+					} catch (InterruptedException e1) {
+						System.out.println("node was not ready to receive messages");
+						e1.printStackTrace();
+					}
+					
+					if(m instanceof NotDegradedMessage){
+						balancer.decreaseDegradedCount();
+					}else if(m instanceof DegradedMessage){
+						degradedStarted();
+					}
+				}
+			});
+		}else if(m instanceof AckMessage){
+			processAcks.execute(new Runnable() {
+				
+				@Override
+				public void run() {
+					
+					try {
+						ready.await();
+					} catch (InterruptedException e1) {
+						System.out.println("node was not ready to receive messages");
+						e1.printStackTrace();
+					}
+					
+					if(m instanceof ForwardAckMessage){
+						balancer.forwardedSignals(((ForwardAckMessage) m).getId());
+					}else if(m instanceof BackupAckMessage){
+						BackupAckMessage message = (BackupAckMessage) m;
+						balancer.backedupSignals(message.getFrom(), message.getId());
+					}else if(m instanceof NewNodeForwardAckMessage){
+						balancer.newNodeForwardSignalsReceived(src,((NewNodeForwardAckMessage) m).getId());
+					}else if(m instanceof ForgetBackupAckMessage){
+						balancer.requestForgetReceived(src, ((ForgetBackupAckMessage)m).getId());
+					}
+					
+				}
+			});
+		}else{
+			processMessages.execute(new Runnable() {
+				
+				@Override
+				public void run() {
+					try {
+						ready.await();
+					} catch (InterruptedException e1) {
+						System.out.println("node was not ready to receive messages");
+						e1.printStackTrace();
+					}
+					
+					if(m instanceof ForwardMessage){
+						local.add(((ForwardMessage) m).getSignals());
+//						csp.receivedSignals.addAndGet(((ForwardMessage) m).getSignals().size());
+						balancer.share(((ForwardMessage) m).getSignals());
+						try {
+							send(((ForwardMessage) m).generateAck(),src);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}else if(m instanceof BackupMessage){
+						BackupMessage message = (BackupMessage) m;
+						try {
+							balancer.backupSignals(message.getFrom(), message.getSignals());
+							send(message.generateAck(getNodeId()), src);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}else if(m instanceof NewNodeForwardMessage){
+						NewNodeForwardMessage aux = (NewNodeForwardMessage) m;
+						try {
+							balancer.backupSignals(aux.getFrom(), aux.getToBu());
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						local.add(aux.getToFw());
+						balancer.share(aux.getToFw());
+						try {
+							send(aux.generateAck(),aux.getFrom());
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						System.out.println(newNodeMsgsRcvd.get());
+						if(newNodeMsgsRcvd.decrementAndGet()==0){
+							setOld();
+							balancer.decreaseLocalDegradedCount();
+						}
+					}else if(m instanceof ForgetBackupMessage){
+						ForgetBackupMessage f = (ForgetBackupMessage) m;
+						balancer.forgetRequested(f.getFrom(), f.getSignals());
+						try {
+							send(f.generateAck(getNodeId()),f.getFrom());
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+				}
+			});
+		}
+		
+	}
+	
+	public void add(Signal s){
+		if(rnd.nextFloat()<1.01/group.size()){
+			local.add(s);
+			balancer.share(s);
+		}else{
+			balancer.forward(s);
+		}
+	}
+	
+	
+	public void exit(){
+		channel.disconnect();
+		channel.close();
+	}
+	
+	private void send(Message msg) throws Exception{
+		System.out.println("se envía a:" + msg.getDest() + "cont: " + msg.getObject());
+		channel.send(msg);
+	}
+
+	public void send(ClusterMessage message, Address to) throws Exception{
+		Message msg = new Message(to, message);
+		send(msg);
+		
+	}
+	
+	public void sendDegradedFinished() throws Exception{
+		Message msg = new Message(null, new NotDegradedMessage(getNodeId()));
+		send(msg);
+	}
+	
+	public void sendDegradedStarted() throws Exception{
+		Message msg = new Message(null, new DegradedMessage(getNodeId()));
+		send(msg);
+	}
+	
+	public void balance(Address address, int size){
+		System.out.println("agregando nodo:" + address);
+		try {
+			send(balancer.newNodeForwardSignals(size),address);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public int backupSignals(){
+		return balancer.getBackups();
+	}
+	
+	public String getNodeIdName(){
+		return getNodeId().toString();
+	}
+	
+	public void viewChangedDegraded(){
+		this.degraded.set(true);
+		balancer.setDegradedCount(group.size());
+	}
+	
+	public void degradedStarted(){
+		if(balancer.isAlreadyDegraded()) return;
+		this.degraded.set(true);
+		balancer.setDegradedCount(group.size());
+		try {
+			sendDegradedStarted();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void degradedFinished(){
+		this.degraded.set(false);
+	}
+	
+	public void localDegradedFinished(){
+		try {
+			sendDegradedFinished();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean isDegraded(){
+		return degraded.get();
+	}
+	public Address getOther(){
+		if(others==null) return null;
+		float aux = rnd.nextFloat()*others.size();
+		int k = 1;
+		Address ret = null;
+		for(Address a: others){
+			if(k++>aux){
+				ret = a;
+				break;
+			}
+		}
+		if(others.size()>0 && ret == null){
+			return getOther();
+		}else{
+			return ret;
+		}
+	}
+	
+	public void remove(List<Signal> signals){
+		local.remove(signals);
+	}
+	
+	public boolean isNew(){
+		return isNew.get();
+	}
+	
+	public void setOld(){
+		isNew.set(false);
+	}
+	
+	public List<Address> getOthers(){
+		if(others==null) return null;
+		return Lists.newLinkedList(others);
+	}
+	
+	public Address getNodeId() {
+		return channel.getAddress();
+	}
+	
+}
