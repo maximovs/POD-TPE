@@ -115,6 +115,12 @@ public class ClusterProcessor extends ReceiverAdapter {
 						}
 						System.out.println("new nodes: " + newMembers);
 						balance(newMembers.poll(), new_view.size());
+						group = new_view;
+						ConcurrentLinkedQueue<Address> others = new ConcurrentLinkedQueue<>();
+						for(Address a:group.getMembers()){
+							if(!a.equals(getNodeId())) others.add(a);
+						}
+						self.others = others;
 					}
 					if(group.size()>new_view.size()){
 						Address left = null;
@@ -127,19 +133,23 @@ public class ClusterProcessor extends ReceiverAdapter {
 						}
 						if(k>1) System.out.println("Signals were lost :(");
 						System.out.println("left node: " + left);
+						group = new_view;
+						ConcurrentLinkedQueue<Address> others = new ConcurrentLinkedQueue<>();
+						for(Address a:group.getMembers()){
+							if(!a.equals(getNodeId())) others.add(a);
+						}
+						self.others = others;
+					
 						storeAndBackup(left);
 					}
-					group = new_view;
+					
 //					viewChangedDegraded();
 					
-					ConcurrentLinkedQueue<Address> others = new ConcurrentLinkedQueue<>();
-					for(Address a:group.getMembers()){
-						if(!a.equals(getNodeId())) others.add(a);
-					}
-					self.others = others;
+					
 					balancer.decrementLocalDegradedCount();
 //					balancer.decreaseLocalDegradedCount();
 					balancer.timerEnabledOn();
+					if(group.size()==1)	balancer.timerEnabledOff();
 				}
 				
 				System.out.println("** view: " + new_view);
@@ -153,8 +163,9 @@ public class ClusterProcessor extends ReceiverAdapter {
 
 
 	private void storeAndBackup(Address left) {
-//		degradedStarted();
-//		balancer.nodeLeft(left);
+		balancer.incrementLocalDegradedCount();
+		degradedStarted();
+		balancer.nodeLeft(left);
 		System.out.println("store and backup" + left);
 		
 	}

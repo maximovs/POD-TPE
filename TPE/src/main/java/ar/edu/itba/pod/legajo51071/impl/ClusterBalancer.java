@@ -29,19 +29,19 @@ public class ClusterBalancer {
 	final ClusterProcessor clusterProc;
 	private ConcurrentHashMap<Address, ConcurrentLinkedQueue<Signal>> backedUpTo = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Address, ConcurrentLinkedQueue<Signal>> backups = new ConcurrentHashMap<>();
-	
+
 	@GuardedBy("this")	private CountDownLatch degradedCount;
 	@GuardedBy("this")	private Thread syncWaiter;
 	@GuardedBy("this")	private AtomicBoolean notDegradedSet = new AtomicBoolean(false);
 	@GuardedBy("this")	private AtomicInteger localDegradedCount = new AtomicInteger();
-	
+
 	private final Semaphore addingNewNode = new Semaphore(1);
-	
+
 	private ConcurrentHashMap<Integer, ConcurrentHashMap<Address,List<Signal>>> toRemoveBackedUpToFws = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Integer, ConcurrentHashMap<Address,List<Signal>>> toRemoveBackedUpToBus = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<Integer, ConcurrentHashMap<Address,List<Signal>>> toForget = new ConcurrentHashMap<>();
 	private AtomicInteger toRemoveBackedUpToId = new AtomicInteger();
-	
+
 	private AtomicInteger backupsCount = new AtomicInteger();
 	private AtomicInteger backuptosCount = new AtomicInteger();
 	private AtomicInteger shareId = new AtomicInteger();
@@ -52,7 +52,7 @@ public class ClusterBalancer {
 	private ConcurrentLinkedQueue<Signal> toForward = new ConcurrentLinkedQueue<>();
 	private ConcurrentHashMap<Integer, List<Signal>> forwards = new ConcurrentHashMap<>();
 	private Timer timer = new Timer();
-	
+
 	private AtomicBoolean timerEnabled = new AtomicBoolean();
 
 	public ClusterBalancer(ClusterProcessor clusterProce) {
@@ -62,7 +62,7 @@ public class ClusterBalancer {
 
 			@Override
 			public void run() {
-//				System.out.println("falses: " + (clusterProc.isNew()?"is new ":"") + (clusterProc.isDegraded()?"":"clusterProc not degraded") + (toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty()?"":"Not everything Empty")  + (toRemoveBackedUpToBus.isEmpty()?"":"toRemoveBus not empty ") + (toRemoveBackedUpToFws.isEmpty()?"":"toRemoveFws: not empty ") + (notDegradedSet.get()?"notDegradedWasSet ":"") + (localDegradedCount.get()!=0?"localDegCount: " + localDegradedCount.get():""));
+				//				System.out.println("falses: " + (clusterProc.isNew()?"is new ":"") + (clusterProc.isDegraded()?"":"clusterProc not degraded") + (toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty()?"":"Not everything Empty")  + (toRemoveBackedUpToBus.isEmpty()?"":"toRemoveBus not empty ") + (toRemoveBackedUpToFws.isEmpty()?"":"toRemoveFws: not empty ") + (notDegradedSet.get()?"notDegradedWasSet ":"") + (localDegradedCount.get()!=0?"localDegCount: " + localDegradedCount.get():""));
 				System.out.println(localDegradedCount + "deg countdown" + (degradedCount!=null?degradedCount.getCount():""));
 				if(!balancer.updateDegradedStatus()){
 					if(timerEnabled.get()){
@@ -83,11 +83,11 @@ public class ClusterBalancer {
 				System.out.println("falses: " + (clusterProc.isNew()?"is new ":"") + (clusterProc.isDegraded()?"":"clusterProc not degraded") + (toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty()?"":"Not everything Empty")  + (toRemoveBackedUpToBus.isEmpty()?"":"toRemoveBus not empty ") + (toRemoveBackedUpToFws.isEmpty()?"":"toRemoveFws: not empty ") + (notDegradedSet.get()?"notDegradedWasSet ":"") + (localDegradedCount.get()!=0?"localDegCount: " + localDegradedCount.get():""));
 				System.out.println("backups de: " + backups.keySet() + "en total: " + backupsCount);
 				System.out.println("backuped to:" + backedUpTo.keySet() + "en total: " + backuptosCount);
-//				System.out.println("total de señales procesadas: " + clusterProc.csp.receivedSignals);
+				//				System.out.println("total de señales procesadas: " + clusterProc.csp.receivedSignals);
 				System.out.println("to forward: " + toForward.size());
 				System.out.println("forwarded: " + forwards.size());
 				System.out.println("toShare: " + toShare.size());
-//				System.out.println("get other:" + clusterProc.getOther() + "me: " + clusterProc.getNodeId());
+				//				System.out.println("get other:" + clusterProc.getOther() + "me: " + clusterProc.getNodeId());
 			}
 		}, 25000,25000);
 	}
@@ -102,7 +102,7 @@ public class ClusterBalancer {
 			return false;
 		}
 	}
-	
+
 	private void manageForwards(){
 		if(clusterProc.getOthers() == null || clusterProc.getOthers().size() == 0) return;
 		List<Signal> toForwardCopy = Lists.newLinkedList(toForward);
@@ -176,7 +176,7 @@ public class ClusterBalancer {
 	}
 
 	private void backupSignalsRequest(Address from, Address to, List<Signal> signals, int id) throws Exception{
-		
+
 		BackupMessage msg = new BackupMessage(id, from, signals);
 		shares.put(id, signals);
 		toShare.removeAll(signals);
@@ -199,14 +199,14 @@ public class ClusterBalancer {
 		backupsCount.addAndGet(l.size());
 		decrementLocalDegradedCount();
 	}
-	
-	
+
+
 	/**	Makes two lists of signals to send to the new node in order to balance the amount they have.
 	 * It takes the signals from the ones BackedUpTo: 1/(size of the group)
 	 * */
 	public synchronized NewNodeForwardMessage newNodeForwardSignals(int size){
 		incrementLocalDegradedCount();
-//		HashMap<Address,ConcurrentLinkedQueue<Signal>> backedUpToCopy = new HashMap<>(backedUpTo);
+		//		HashMap<Address,ConcurrentLinkedQueue<Signal>> backedUpToCopy = new HashMap<>(backedUpTo);
 		if(backedUpTo.size()==0 && !timerEnabled.get()){
 			List<Signal> f = Lists.newLinkedList(toShare).subList(0, toShare.size()/2);
 			f = new LinkedList<>(f);
@@ -251,7 +251,7 @@ public class ClusterBalancer {
 		}
 		return new NewNodeForwardMessage(clusterProc.getNodeId(),Fw, Bu, id);
 	}
-	
+
 	public void newNodeForwardSignalsReceived(Address node, int id) {
 		if(id==-1) {
 			decrementLocalDegradedCount();
@@ -259,7 +259,7 @@ public class ClusterBalancer {
 		}
 		for(Address a: toRemoveBackedUpToBus.get(id).keySet()){
 			List<Signal> aux = toRemoveBackedUpToBus.get(id).remove(a);
-//			backuptosCount.addAndGet(aux.size());
+			//			backuptosCount.addAndGet(aux.size());
 			backedUpTo.putIfAbsent(node, new ConcurrentLinkedQueue<Signal>());
 			backedUpTo.get(node).addAll(aux);
 			backuptosCount.addAndGet(aux.size());
@@ -273,13 +273,13 @@ public class ClusterBalancer {
 		toRemoveBackedUpToFws.remove(id);
 		decrementLocalDegradedCount();
 	}
-	
+
 	private void localRemove(List<Signal> signals) {
 		incrementLocalDegradedCount();
 		clusterProc.remove(signals);
 		decrementLocalDegradedCount();
 	}
-	
+
 	private void requestForget(Address a, int id, List<Signal> signals){
 		System.out.println("se pide a " + a + "que olvide " + signals.size() + "señales"); 
 		ForgetBackupMessage msg = new ForgetBackupMessage(id, clusterProc.getNodeId(), signals);
@@ -291,14 +291,14 @@ public class ClusterBalancer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void forgetRequested(Address a, List<Signal> signals){
 		incrementLocalDegradedCount();
 		backups.get(a).removeAll(signals);
 		backupsCount.addAndGet(-signals.size());
 		decrementLocalDegradedCount();
 	}
-	
+
 	public void requestForgetReceived(Address a, int id){
 		toForget.get(id).remove(a);
 		if(toForget.get(id).isEmpty()){
@@ -306,7 +306,7 @@ public class ClusterBalancer {
 		}
 		decrementLocalDegradedCount();
 	}
-	
+
 	public synchronized void setDegradedCount(int size) {
 		final ClusterBalancer cb = this; 
 		this.degradedCount = new CountDownLatch(size);
@@ -321,7 +321,7 @@ public class ClusterBalancer {
 			}
 		}
 		syncWaiter = new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				try {
@@ -336,17 +336,17 @@ public class ClusterBalancer {
 		syncWaiter.start();
 		notDegradedSet.set(false);
 	}
-	
+
 	public synchronized void decreaseDegradedCount() {
 		this.degradedCount.countDown();
-		
+
 	}
-	
+
 	public synchronized void decreaseLocalDegradedCount() {
 		this.decreaseDegradedCount();
 		clusterProc.localDegradedFinished();
 	}
-	
+
 	public void degradedFinished(){
 		clusterProc.degradedFinished();
 		newNodeAdded();
@@ -372,40 +372,44 @@ public class ClusterBalancer {
 	public int getBackups(){
 		return backupsCount.get();
 	}
-	
+
 	private void setLocalDegraded(){
 		if(!isAlreadyDegraded()){
 			clusterProc.degradedStarted();
 		}
 	}
-	
+
 	public synchronized void decrementLocalDegradedCount(){
 		System.out.println("se decrementa");
 		if(localDegradedCount.decrementAndGet() ==0){
-//			degradedFinished();
+			//			degradedFinished();
 		};
 	}
-	
+
 	public synchronized void incrementLocalDegradedCount(){
 		System.out.println("se incrementa");
 		localDegradedCount.incrementAndGet();
 		notDegradedSet.set(false);
 		setLocalDegraded();
 	}
-	
+
 	public void timerEnabledOn(){
 		timerEnabled.set(true);
 	}
-	
+
+	public void timerEnabledOff(){
+		timerEnabled.set(false);
+	}
+
 	public boolean isAlreadyDegraded(){
-//		System.out.println("id deg: " + clusterProc.isDegraded()  + ", !notDegSet " + !notDegradedSet.get());
+		//		System.out.println("id deg: " + clusterProc.isDegraded()  + ", !notDegSet " + !notDegradedSet.get());
 		return clusterProc.isDegraded() && !notDegradedSet.get() && sameCountDown(); 
 	}
-	
+
 	private boolean sameCountDown(){
 		return clusterProc.getOthers()==null?true:clusterProc.getOthers().size()+1 == degradedCount.getCount();
 	}
-	
+
 	public void addNewNode(){
 		try {
 			addingNewNode.acquire();
@@ -414,15 +418,29 @@ public class ClusterBalancer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void newNodeAdded(){
 		if(addingNewNode.tryAcquire()==false){
-//			decrementLocalDegradedCount();
+			//			decrementLocalDegradedCount();
 		};
 		addingNewNode.release();
 	}
-	
+
 	public void nodeLeft(Address left) {
-		
+		ConcurrentLinkedQueue<Signal> aux = backedUpTo.remove(left);
+		List<Signal> l;
+		if(aux!=null){
+			l = Lists.newArrayList(aux);
+			backuptosCount.addAndGet(-l.size());
+			share(l);
+		}
+		aux = backups.remove(left);
+		if(aux!=null){
+			l = Lists.newArrayList(aux);
+			backupsCount.addAndGet(-l.size());
+			for(Signal s:l){
+				clusterProc.add(s);
+			}
+		}
 	}
 }
