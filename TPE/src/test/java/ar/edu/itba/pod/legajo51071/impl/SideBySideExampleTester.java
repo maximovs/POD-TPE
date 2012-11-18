@@ -17,7 +17,7 @@ public class SideBySideExampleTester extends SideBySideTester {
 
 	@Override
 	protected SignalProcessor init() throws Exception {
-		Registry reg = LocateRegistry.getRegistry(20000);
+		Registry reg = LocateRegistry.getRegistry(9229);
 		SignalProcessor	sp = (SignalProcessor) reg.lookup("SignalProcessor");
 		SPNode node = (SPNode) reg.lookup("SPNode");
 		node.exit();

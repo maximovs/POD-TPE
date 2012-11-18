@@ -95,4 +95,13 @@ public class LocalProcessor {
 		
 	}
 
+	public void empty() {
+		for(ConcurrentLinkedQueue<Signal> s:signals.values()){
+			while(!s.isEmpty()){
+				s.remove();
+				addedSignals.decrementAndGet();
+			}
+		}
+	}
+
 }

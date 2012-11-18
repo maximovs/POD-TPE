@@ -9,6 +9,7 @@ import java.rmi.registry.Registry;
 
 import ar.edu.itba.pod.legajo51071.api.Result;
 import ar.edu.itba.pod.legajo51071.api.SPNode;
+import ar.edu.itba.pod.legajo51071.api.Signal;
 import ar.edu.itba.pod.legajo51071.api.SignalProcessor;
 import ar.edu.itba.pod.legajo51071.signal.source.RandomSource;
 
@@ -36,7 +37,7 @@ public class SampleClient {
 			Registry registry = LocateRegistry.getRegistry(hostname, port);
 			SignalProcessor	sp = (SignalProcessor) registry.lookup("SignalProcessor");
 			SPNode node = (SPNode) registry.lookup("SPNode");
-			
+			Signal s = src.next();
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			printOptions();
 			while (true) {
@@ -50,7 +51,7 @@ public class SampleClient {
 				} else if (line.equals("3")) {
 					node.getStats().print(System.out);
 				} else if (line.equals("4")) {
-					Result results = sp.findSimilarTo(src.next());
+					Result results = sp.findSimilarTo(s);
 					System.out.println(">>> Result: " + results);
 				} else if (line.equals("5")) {
 					this.generate(sp, 1);

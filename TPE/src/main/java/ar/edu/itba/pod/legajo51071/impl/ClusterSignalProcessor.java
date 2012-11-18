@@ -18,7 +18,6 @@ import ar.edu.itba.pod.legajo51071.api.SignalProcessor;
 public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 	LocalProcessor localProc; 
 	private volatile ClusterProcessor clusterProc;
-	ConcurrentLinkedQueue<Signal> toShare;
 	AtomicBoolean isStandAlone = new AtomicBoolean();
 	AtomicInteger receivedSignals  = new AtomicInteger();
 	ExecutorService requestsProcessor = Executors.newFixedThreadPool(2);
@@ -49,6 +48,7 @@ public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 			isStandAlone.set(true);
 			if(clusterProc != null) clusterProc.exit();
 			clusterProc = null;
+			localProc.empty();
 //		} catch (InterruptedException e) {
 //			e.printStackTrace();
 //		}
@@ -56,6 +56,8 @@ public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 
 	@Override
 	public NodeStats getStats() throws RemoteException {
+		if(clusterProc==null || isStandAlone.get())
+			return new NodeStats("Empty", receivedSignals.get(), localProc.size(), 0, false);
 		return new NodeStats(clusterProc.getNodeIdName(), receivedSignals.get(), localProc.size(), clusterProc.backupSignals(), clusterProc.isDegraded());
 	}
 
@@ -84,15 +86,19 @@ public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 			throw new IllegalArgumentException("Signal cannot be null");
 		}
 		receivedSignals.incrementAndGet();
-		Result localResults = localProc.findSimilarTo(signal);
 		
 		LinkedList<Result> results = new LinkedList<>();
+		if(clusterProc != null && !isStandAlone.get()){
+		clusterProc.findSimilarTo(results, signal);
+		}
+		
+		Result localResults = localProc.findSimilarTo(signal);
 		results.add(localResults);
 		return findSimilarTo(results,signal);
 	}
 
 	private Result findSimilarTo(List<Result> results, Signal signal){
-		Result result = new Result(signal);;
+		Result result = new Result(signal);
 		for(Result r: results){
 			for(Result.Item item:r.items()){
 				result = result.include(item);
