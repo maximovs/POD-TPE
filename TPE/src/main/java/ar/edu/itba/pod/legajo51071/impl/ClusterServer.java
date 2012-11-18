@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.AlreadyBoundException;
+import java.rmi.RMISecurityManager;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import ar.edu.itba.pod.api.SPNode;
+import ar.edu.itba.pod.api.SignalProcessor;
 import ar.edu.itba.pod.legajo51071.impl.ClusterSignalProcessor;
 import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
 
@@ -30,7 +33,7 @@ public class ClusterServer {
 		try {
 			reg = LocateRegistry.createRegistry(port);
 			
-			ClusterSignalProcessor impl = new ClusterSignalProcessor(threads);
+			SignalProcessor impl = new ClusterSignalProcessor(threads);
 			Remote proxy = UnicastRemoteObject.exportObject(impl, 0);
 
 			// Since the same implementation exports both interfaces, register the same

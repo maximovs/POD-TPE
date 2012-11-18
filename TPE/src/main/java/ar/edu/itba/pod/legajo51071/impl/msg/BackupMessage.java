@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.jgroups.Address;
 
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Signal;
 
 public class BackupMessage extends ClusterMessage{
 	int id;

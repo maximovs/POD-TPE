@@ -4,11 +4,11 @@ import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 
-import ar.edu.itba.pod.legajo51071.api.NodeStats;
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.SPNode;
-import ar.edu.itba.pod.legajo51071.api.Signal;
-import ar.edu.itba.pod.legajo51071.api.SignalProcessor;
+import ar.edu.itba.pod.api.NodeStats;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.SPNode;
+import ar.edu.itba.pod.api.Signal;
+import ar.edu.itba.pod.api.SignalProcessor;
 
 /**
  * Simple implementation of a signal processor that works on a single thread and

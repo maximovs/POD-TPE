@@ -3,8 +3,8 @@ package ar.edu.itba.pod.legajo51071.impl;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.Signal;
 
 public class ProcessingTask implements Callable<Result>{
 	ConcurrentLinkedQueue<Signal> signals;

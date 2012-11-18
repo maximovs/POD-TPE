@@ -7,11 +7,11 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.SPNode;
-import ar.edu.itba.pod.legajo51071.api.Signal;
-import ar.edu.itba.pod.legajo51071.api.SignalProcessor;
-import ar.edu.itba.pod.legajo51071.signal.source.RandomSource;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.SPNode;
+import ar.edu.itba.pod.api.Signal;
+import ar.edu.itba.pod.api.SignalProcessor;
+import ar.edu.itba.pod.signal.source.RandomSource;
 
 /**
  * Simple interactive client to test a cluster node

@@ -10,8 +10,8 @@ import javax.annotation.concurrent.GuardedBy;
 
 import com.google.common.collect.Lists;
 
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.Signal;
 
 public class Query {
 	private static final AtomicInteger idGen = new AtomicInteger();

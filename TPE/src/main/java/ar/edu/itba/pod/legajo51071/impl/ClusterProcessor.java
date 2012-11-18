@@ -22,8 +22,8 @@ import org.jgroups.View;
 
 import com.google.common.collect.Lists;
 
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.Signal;
 import ar.edu.itba.pod.legajo51071.impl.msg.AckMessage;
 import ar.edu.itba.pod.legajo51071.impl.msg.BackupAckMessage;
 import ar.edu.itba.pod.legajo51071.impl.msg.BackupMessage;

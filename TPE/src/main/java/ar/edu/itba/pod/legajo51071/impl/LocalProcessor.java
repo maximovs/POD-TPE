@@ -11,8 +11,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.Signal;
 
 public class LocalProcessor {
 	ExecutorService ex;

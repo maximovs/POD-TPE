@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite failures="0" time="0.026" errors="0" skipped="0" tests="8" name="ar.edu.itba.pod.api.SignalTest">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib"/>
+    <property name="java.vm.version" value="23.5-b02"/>
+    <property name="user.country.format" value="AR"/>
+    <property name="gopherProxySet" value="false"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="path.separator" value=":"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="/Users/maximo/Documents/POD/POD-TPE/TPE"/>
+    <property name="java.runtime.version" value="1.7.0_09-b05"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="basedir" value="/Users/maximo/Documents/POD/POD-TPE/TPE"/>
+    <property name="java.endorsed.dirs" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/endorsed"/>
+    <property name="os.arch" value="x86_64"/>
+    <property name="surefire.real.class.path" value="/Users/maximo/Documents/POD/POD-TPE/TPE/target/surefire/surefirebooter3758820672200479165.jar"/>
+    <property name="java.io.tmpdir" value="/var/folders/7l/sb84yz6n0kvbxnvcj3xqfm7h0000gn/T/"/>
+    <property name="line.separator" value="
+"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="sun.jnu.encoding" value="US-ASCII"/>
+    <property name="java.library.path" value="/Users/maximo/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="surefire.test.class.path" value="/Users/maximo/Documents/POD/POD-TPE/TPE/target/test-classes:/Users/maximo/Documents/POD/POD-TPE/TPE/target/classes:/Users/maximo/.m2/repository/com/google/guava/guava/11.0.1/guava-11.0.1.jar:/Users/maximo/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar:/Users/maximo/.m2/repository/org/jgroups/jgroups/3.0.3.Final/jgroups-3.0.3.Final.jar:/Users/maximo/.m2/repository/junit/junit/4.10/junit-4.10.jar:/Users/maximo/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="51.0"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="os.version" value="10.8.2"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="user.home" value="/Users/maximo"/>
+    <property name="user.timezone" value=""/>
+    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
+    <property name="java.specification.version" value="1.7"/>
+    <property name="file.encoding" value="US-ASCII"/>
+    <property name="user.name" value="maximo"/>
+    <property name="java.class.path" value="/Users/maximo/Documents/POD/POD-TPE/TPE/target/test-classes:/Users/maximo/Documents/POD/POD-TPE/TPE/target/classes:/Users/maximo/.m2/repository/com/google/guava/guava/11.0.1/guava-11.0.1.jar:/Users/maximo/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar:/Users/maximo/.m2/repository/org/jgroups/jgroups/3.0.3.Final/jgroups-3.0.3.Final.jar:/Users/maximo/.m2/repository/junit/junit/4.10/junit-4.10.jar:/Users/maximo/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:"/>
+    <property name="java.vm.specification.version" value="1.7"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre"/>
+    <property name="sun.java.command" value="/Users/maximo/Documents/POD/POD-TPE/TPE/target/surefire/surefirebooter3758820672200479165.jar /Users/maximo/Documents/POD/POD-TPE/TPE/target/surefire/surefire6611424654318551935tmp /Users/maximo/Documents/POD/POD-TPE/TPE/target/surefire/surefire7054084357846355072tmp"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="user.language" value="en"/>
+    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.version" value="1.7.0_09"/>
+    <property name="java.ext.dirs" value="/Users/maximo/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
+    <property name="sun.boot.class.path" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/lib/JObjC.jar:/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home/jre/classes"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="localRepository" value="/Users/maximo/.m2/repository"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="sun.cpu.isalist" value=""/>
+  </properties>
+  <testcase time="0.012" classname="ar.edu.itba.pod.api.SignalTest" name="sameSignalHasNoDeviation"/>
+  <testcase time="0.001" classname="ar.edu.itba.pod.api.SignalTest" name="deviationIsCommutative"/>
+  <testcase time="0" classname="ar.edu.itba.pod.api.SignalTest" name="deviationHandlesDifferentStart"/>
+  <testcase time="0.001" classname="ar.edu.itba.pod.api.SignalTest" name="deviationHandlesDifferentEnd"/>
+  <testcase time="0.001" classname="ar.edu.itba.pod.api.SignalTest" name="deviationGrowsOnBitMismatches"/>
+  <testcase time="0.001" classname="ar.edu.itba.pod.api.SignalTest" name="deviationGrowsOnValueDifference"/>
+  <testcase time="0.001" classname="ar.edu.itba.pod.api.SignalTest" name="deviationIsOffsetAgnostic"/>
+  <testcase time="0.001" classname="ar.edu.itba.pod.api.SignalTest" name="deviationDoesntOverflow"/>
+</testsuite>

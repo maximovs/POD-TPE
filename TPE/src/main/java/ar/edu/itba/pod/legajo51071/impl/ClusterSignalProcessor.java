@@ -12,11 +12,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ar.edu.itba.pod.legajo51071.api.NodeStats;
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.SPNode;
-import ar.edu.itba.pod.legajo51071.api.Signal;
-import ar.edu.itba.pod.legajo51071.api.SignalProcessor;
+import ar.edu.itba.pod.api.NodeStats;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.SPNode;
+import ar.edu.itba.pod.api.Signal;
+import ar.edu.itba.pod.api.SignalProcessor;
 
 public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 	LocalProcessor localProc; 
@@ -82,7 +82,8 @@ public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 	}
 
 	@Override
-	public Result findSimilarTo(final Signal signal) throws RemoteException {
+	public Result findSimilarTo(Signal signal) throws RemoteException {
+		final Signal saux = signal;
 		if (signal == null) {
 			throw new IllegalArgumentException("Signal cannot be null");
 		}
@@ -95,12 +96,12 @@ public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 				@Override
 				public List<Result> call() throws Exception {
 					// TODO Auto-generated method stub
-					return clusterProc.findSimilarTo(signal);
+					return clusterProc.findSimilarTo(saux);
 				}
 			});
 		
 		}
-		Result localResults = localProc.findSimilarTo(signal);
+		Result localResults = localProc.findSimilarTo(saux);
 		results.add(localResults);
 		if(f!=null){
 			try {
@@ -110,7 +111,7 @@ public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 				e.printStackTrace();
 			}
 		}
-		return findSimilarTo(results,signal);
+		return findSimilarTo(results,saux);
 	}
 
 	private Result findSimilarTo(List<Result> results, Signal signal){

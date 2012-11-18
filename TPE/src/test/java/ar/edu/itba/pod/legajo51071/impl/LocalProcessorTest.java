@@ -8,11 +8,11 @@ import java.util.LinkedList;
 import org.junit.Before;
 import org.junit.Test;
 
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.Signal;
 import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
-import ar.edu.itba.pod.legajo51071.signal.source.RandomSource;
-import ar.edu.itba.pod.legajo51071.signal.source.Source;
+import ar.edu.itba.pod.signal.source.RandomSource;
+import ar.edu.itba.pod.signal.source.Source;
 
 public class LocalProcessorTest {
 	private LocalProcessor sut;

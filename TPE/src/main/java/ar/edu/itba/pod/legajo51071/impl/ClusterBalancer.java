@@ -17,7 +17,7 @@ import org.jgroups.Address;
 
 import com.google.common.collect.Lists;
 
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Signal;
 import ar.edu.itba.pod.legajo51071.impl.msg.BackupMessage;
 import ar.edu.itba.pod.legajo51071.impl.msg.ForgetBackupMessage;
 import ar.edu.itba.pod.legajo51071.impl.msg.ForwardMessage;

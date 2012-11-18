@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.legajo51071.impl;
 
 import static org.junit.Assert.assertEquals;
-import static ar.edu.itba.pod.legajo51071.signal.source.SignalBuilder.*;
+import static ar.edu.itba.pod.signal.source.SignalBuilder.*;
 
 import java.rmi.RemoteException;
 import java.util.Arrays;
@@ -9,12 +9,12 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
-import ar.edu.itba.pod.legajo51071.api.Signal;
-import ar.edu.itba.pod.legajo51071.api.SignalProcessor;
+import ar.edu.itba.pod.api.Signal;
+import ar.edu.itba.pod.api.SignalProcessor;
 import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
-import ar.edu.itba.pod.legajo51071.signal.source.RandomSource;
-import ar.edu.itba.pod.legajo51071.signal.source.Source;
-import ar.edu.itba.pod.legajo51071.signal.source.SignalBuilder.SignalFunction;
+import ar.edu.itba.pod.signal.source.RandomSource;
+import ar.edu.itba.pod.signal.source.Source;
+import ar.edu.itba.pod.signal.source.SignalBuilder.SignalFunction;
 
 /**
  * Test suite that runs the same tests agains an implementation and

@@ -3,8 +3,8 @@ package ar.edu.itba.pod.legajo51071.impl.msg;
 
 import org.jgroups.Address;
 
-import ar.edu.itba.pod.legajo51071.api.Result;
-import ar.edu.itba.pod.legajo51071.api.Signal;
+import ar.edu.itba.pod.api.Result;
+import ar.edu.itba.pod.api.Signal;
 
 public class QueryRequestMessage extends ClusterMessage implements QueryMessage{
 	int id;
