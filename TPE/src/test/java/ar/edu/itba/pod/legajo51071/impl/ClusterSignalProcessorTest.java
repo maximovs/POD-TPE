@@ -19,7 +19,7 @@ public class ClusterSignalProcessorTest {
 
 	@Before
 	public void setup() {
-		 sut = new ClusterSignalProcessor(4, 50);
+		 sut = new ClusterSignalProcessor(4);
 		 src = new RandomSource(1);
 	}
 	

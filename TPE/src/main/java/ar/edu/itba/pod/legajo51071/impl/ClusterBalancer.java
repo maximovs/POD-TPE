@@ -413,6 +413,7 @@ public class ClusterBalancer {
 	public void addNewNode(){
 		try {
 			addingNewNode.acquire();
+			clusterProc.addingNode.set(true);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -424,6 +425,7 @@ public class ClusterBalancer {
 			//			decrementLocalDegradedCount();
 		};
 		addingNewNode.release();
+		clusterProc.addingNode.set(false);
 	}
 
 	public void nodeLeft(Address left) {

@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.legajo51071;
+package ar.edu.itba.pod.legajo51071.impl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,10 +18,11 @@ import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
  */
 public class ClusterServer {
 	private final int port;
-
-	public ClusterServer(int port) {
+	private final int threads;
+	public ClusterServer(int port, int threads) {
 		super();
 		this.port = port;
+		this.threads = threads;
 	}
 
 	public void start() {
@@ -29,7 +30,7 @@ public class ClusterServer {
 		try {
 			reg = LocateRegistry.createRegistry(port);
 			
-			ClusterSignalProcessor impl = new ClusterSignalProcessor(4);
+			ClusterSignalProcessor impl = new ClusterSignalProcessor(threads);
 			Remote proxy = UnicastRemoteObject.exportObject(impl, 0);
 
 			// Since the same implementation exports both interfaces, register the same
@@ -55,10 +56,10 @@ public class ClusterServer {
 
 	
 	public static void main(String[] args) {
-		if (args.length < 1) {
-			System.out.println("Command line parameters: SampleServer <port> ");
+		if (args.length < 2) {
+			System.out.println("Command line parameters: SampleServer <port> <threads>");
 			return;
 		}
-		new ClusterServer(Integer.parseInt(args[0])).start();
+		new ClusterServer(Integer.parseInt(args[0]),Integer.parseInt(args[1])).start();
 	}
 }

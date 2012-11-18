@@ -63,6 +63,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 	private volatile Random rnd = new Random(System.currentTimeMillis());
 
 	private final AtomicBoolean degraded = new AtomicBoolean();
+	public final AtomicBoolean addingNode = new AtomicBoolean();
 
 	private final ConcurrentHashMap<Integer,Query> querys = new ConcurrentHashMap<>();
 
@@ -429,6 +430,11 @@ public class ClusterProcessor extends ReceiverAdapter {
 			return degraded.get();
 		}
 	}
+	
+	public boolean systemDeg(){
+		return isNew() || (isDegraded() && others!=null) || addingNode.get() ;
+	}
+	
 	public Address getOther(){
 		if(others==null) return null;
 		float aux = rnd.nextFloat()*others.size();
@@ -468,7 +474,8 @@ public class ClusterProcessor extends ReceiverAdapter {
 		return channel.getAddress();
 	}
 
-	public void findSimilarTo(LinkedList<Result> results, Signal signal) {
+	public List<Result> findSimilarTo(Signal signal) {
+		LinkedList<Result> results = new LinkedList<>();
 		boolean errors = true;
 		while(errors){
 			try {
@@ -479,7 +486,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 
 				}
 				List<Address> to = getOthers();
-				if(to == null) return;
+				if(to == null) return results;
 				Query q = new Query(to.size(), signal);
 				putQuery(q);
 				sendQueryRequest(to, q);
@@ -496,6 +503,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 
 			}
 		}
+		return results;
 
 	}
 
