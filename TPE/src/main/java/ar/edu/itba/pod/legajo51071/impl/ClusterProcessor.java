@@ -4,14 +4,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.concurrent.GuardedBy;
 
 import org.jgroups.Address;
 import org.jgroups.JChannel;
@@ -51,6 +49,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 	private final CountDownLatch ready = new CountDownLatch(1); 
 	private AtomicInteger newNodeMsgsRcvd = new AtomicInteger();
 	private final AtomicBoolean isNew = new AtomicBoolean();
+	private final AtomicBoolean startedReceiving = new AtomicBoolean();
 	
 	private volatile Random rnd = new Random(System.currentTimeMillis());
 	
@@ -88,6 +87,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 				if(group == null){
 					group = new_view;
 					if(group.size()!=1){
+						balancer.addNewNode();
 						ConcurrentLinkedQueue<Address> others = new ConcurrentLinkedQueue<>();
 						for(Address a:group.getMembers()){
 							if(!a.equals(getNodeId())) others.add(a);
@@ -96,7 +96,9 @@ public class ClusterProcessor extends ReceiverAdapter {
 						System.out.println("I am the new node");
 						newNodeMsgsRcvd.addAndGet(others.size());
 						isNew.set(true);
-						viewChangedDegraded();
+//						viewChangedDegraded();
+//						degradedStarted();
+//						balancer.incrementLocalDegradedCount();
 						ready.countDown();
 						balancer.timerEnabledOn();
 //						localDegradedFinished();
@@ -105,6 +107,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 						ready.countDown();
 					}
 				}else{
+				
 					if(group.size()<new_view.size()){
 						ConcurrentLinkedQueue<Address> newMembers = new ConcurrentLinkedQueue<>();
 						for(Address a: new_view.getMembers()){
@@ -127,13 +130,15 @@ public class ClusterProcessor extends ReceiverAdapter {
 						storeAndBackup(left);
 					}
 					group = new_view;
-					viewChangedDegraded();
+//					viewChangedDegraded();
+					
 					ConcurrentLinkedQueue<Address> others = new ConcurrentLinkedQueue<>();
 					for(Address a:group.getMembers()){
 						if(!a.equals(getNodeId())) others.add(a);
 					}
 					self.others = others;
-					balancer.decreaseLocalDegradedCount();
+					balancer.decrementLocalDegradedCount();
+//					balancer.decreaseLocalDegradedCount();
 					balancer.timerEnabledOn();
 				}
 				
@@ -234,6 +239,9 @@ public class ClusterProcessor extends ReceiverAdapter {
 							e.printStackTrace();
 						}
 					}else if(m instanceof NewNodeForwardMessage){
+						if(startedReceiving.compareAndSet(false, true)){
+							balancer.incrementLocalDegradedCount();
+						}
 						NewNodeForwardMessage aux = (NewNodeForwardMessage) m;
 						try {
 							balancer.backupSignals(aux.getFrom(), aux.getToBu());
@@ -252,7 +260,9 @@ public class ClusterProcessor extends ReceiverAdapter {
 						System.out.println(newNodeMsgsRcvd.get());
 						if(newNodeMsgsRcvd.decrementAndGet()==0){
 							setOld();
-							balancer.decreaseLocalDegradedCount();
+
+//							balancer.decreaseLocalDegradedCount();
+							balancer.decrementLocalDegradedCount();
 						}
 					}else if(m instanceof ForgetBackupMessage){
 						ForgetBackupMessage f = (ForgetBackupMessage) m;
@@ -297,18 +307,21 @@ public class ClusterProcessor extends ReceiverAdapter {
 		
 	}
 	
-	public void sendDegradedFinished() throws Exception{
-		Message msg = new Message(null, new NotDegradedMessage(getNodeId()));
+	public void sendDegradedFinished(Address a) throws Exception{
+		Message msg = new Message(a, new NotDegradedMessage(getNodeId()));
 		send(msg);
 	}
 	
-	public void sendDegradedStarted() throws Exception{
-		Message msg = new Message(null, new DegradedMessage(getNodeId()));
+	public void sendDegradedStarted(Address a) throws Exception{
+		Message msg = new Message(a, new DegradedMessage(getNodeId()));
 		send(msg);
 	}
 	
 	public void balance(Address address, int size){
 		System.out.println("agregando nodo:" + address);
+		balancer.addNewNode();
+		balancer.incrementLocalDegradedCount();
+		degradedStarted();
 		try {
 			send(balancer.newNodeForwardSignals(size),address);
 		} catch (Exception e) {
@@ -325,17 +338,21 @@ public class ClusterProcessor extends ReceiverAdapter {
 		return getNodeId().toString();
 	}
 	
-	public void viewChangedDegraded(){
-		this.degraded.set(true);
-		balancer.setDegradedCount(group.size());
-	}
+//	public void viewChangedDegraded(){
+//		this.degraded.set(true);
+//		balancer.setDegradedCount(group.size());
+//	}
 	
 	public void degradedStarted(){
+		System.out.println("tamaño: " + group.size());
 		if(balancer.isAlreadyDegraded()) return;
+		System.out.println("se degrada en un grupo de: " + group.size());
 		this.degraded.set(true);
 		balancer.setDegradedCount(group.size());
 		try {
-			sendDegradedStarted();
+			for(Address a: group){
+				sendDegradedStarted(a);
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -348,7 +365,9 @@ public class ClusterProcessor extends ReceiverAdapter {
 	
 	public void localDegradedFinished(){
 		try {
-			sendDegradedFinished();
+			for(Address a: group){
+				sendDegradedFinished(a);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
