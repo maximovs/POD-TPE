@@ -7,7 +7,7 @@ Construccion
 Ejecutar: mvn package assembly:single
 En la carpeta target se creara el jar TPE-1.0-jar-with-dependencies.jar con todas las clases.
 
-Para ejecutar: java -jar -Xmx2g -Djgroups.bind_addr=<IP> -Djava.net.preferIPv4Stack=true TPE/target/TPE-1.0-jar-with-dependencies.jar <port> <cores>
+Para ejecutar: java -jar -Xmx2g -Djgroups.bind_addr=<IP> -Djava.net.preferIPv4Stack=true target/TPE-1.0-jar-with-dependencies.jar <port> <cores>
 
 donde <IP> es la dirección de red desde donde se conecta a la red con el resto de los nodos.
 
