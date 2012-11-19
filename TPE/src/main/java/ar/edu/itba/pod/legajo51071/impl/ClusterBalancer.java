@@ -63,7 +63,7 @@ public class ClusterBalancer {
 			@Override
 			public void run() {
 				//				System.out.println("falses: " + (clusterProc.isNew()?"is new ":"") + (clusterProc.isDegraded()?"":"clusterProc not degraded") + (toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty()?"":"Not everything Empty")  + (toRemoveBackedUpToBus.isEmpty()?"":"toRemoveBus not empty ") + (toRemoveBackedUpToFws.isEmpty()?"":"toRemoveFws: not empty ") + (notDegradedSet.get()?"notDegradedWasSet ":"") + (localDegradedCount.get()!=0?"localDegCount: " + localDegradedCount.get():""));
-				System.out.println(localDegradedCount + "deg countdown" + (degradedCount!=null?degradedCount.getCount():""));
+//				System.out.println(localDegradedCount + "deg countdown" + (degradedCount!=null?degradedCount.getCount():""));
 				if(!balancer.updateDegradedStatus()){
 					if(timerEnabled.get()){
 						if(clusterProc.isNew()) return;
@@ -73,30 +73,30 @@ public class ClusterBalancer {
 				}
 
 			}
-		}, 0, 5000);
-		timer.schedule(new TimerTask() {
-
-			@Override
-			public void run() {
-				System.out.println("dio: " + (!clusterProc.isNew() && clusterProc.isDegraded() && toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty() && toRemoveBackedUpToBus.isEmpty() && toRemoveBackedUpToFws.isEmpty() && localDegradedCount.equals(0) && notDegradedSet.equals(false)));
-				System.out.println("is new: " + clusterProc.isNew() + ", degraded: " + clusterProc.isDegraded() + ", toRemoveBus: " + (toRemoveBackedUpToBus.isEmpty()?"empty":"not empty") + ", toRemoveFws: " + (toRemoveBackedUpToFws.isEmpty()?"empty":"not empty") + "notDegradedSet: " + notDegradedSet.get() + " localDegCount: " + localDegradedCount.get());
-				System.out.println("falses: " + (clusterProc.isNew()?"is new ":"") + (clusterProc.isDegraded()?"":"clusterProc not degraded") + (toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty()?"":"Not everything Empty")  + (toRemoveBackedUpToBus.isEmpty()?"":"toRemoveBus not empty ") + (toRemoveBackedUpToFws.isEmpty()?"":"toRemoveFws: not empty ") + (notDegradedSet.get()?"notDegradedWasSet ":"") + (localDegradedCount.get()!=0?"localDegCount: " + localDegradedCount.get():""));
-				System.out.println("backups de: " + backups.keySet() + "en total: " + backupsCount);
-				System.out.println("backuped to:" + backedUpTo.keySet() + "en total: " + backuptosCount);
-				//				System.out.println("total de señales procesadas: " + clusterProc.csp.receivedSignals);
-				System.out.println("to forward: " + toForward.size());
-				System.out.println("forwarded: " + forwards.size());
-				System.out.println("toShare: " + toShare.size());
-				//				System.out.println("get other:" + clusterProc.getOther() + "me: " + clusterProc.getNodeId());
-			}
-		}, 25000,25000);
+		}, 0, 500);
+//		timer.schedule(new TimerTask() {
+//
+//			@Override
+//			public void run() {
+//				System.out.println("dio: " + (!clusterProc.isNew() && clusterProc.isDegraded() && toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty() && toRemoveBackedUpToBus.isEmpty() && toRemoveBackedUpToFws.isEmpty() && localDegradedCount.equals(0) && notDegradedSet.equals(false)));
+//				System.out.println("is new: " + clusterProc.isNew() + ", degraded: " + clusterProc.isDegraded() + ", toRemoveBus: " + (toRemoveBackedUpToBus.isEmpty()?"empty":"not empty") + ", toRemoveFws: " + (toRemoveBackedUpToFws.isEmpty()?"empty":"not empty") + "notDegradedSet: " + notDegradedSet.get() + " localDegCount: " + localDegradedCount.get());
+//				System.out.println("falses: " + (clusterProc.isNew()?"is new ":"") + (clusterProc.isDegraded()?"":"clusterProc not degraded") + (toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty()?"":"Not everything Empty")  + (toRemoveBackedUpToBus.isEmpty()?"":"toRemoveBus not empty ") + (toRemoveBackedUpToFws.isEmpty()?"":"toRemoveFws: not empty ") + (notDegradedSet.get()?"notDegradedWasSet ":"") + (localDegradedCount.get()!=0?"localDegCount: " + localDegradedCount.get():""));
+//				System.out.println("backups de: " + backups.keySet() + "en total: " + backupsCount);
+//				System.out.println("backuped to:" + backedUpTo.keySet() + "en total: " + backuptosCount);
+//				//				System.out.println("total de señales procesadas: " + clusterProc.csp.receivedSignals);
+//				System.out.println("to forward: " + toForward.size());
+//				System.out.println("forwarded: " + forwards.size());
+//				System.out.println("toShare: " + toShare.size());
+//				//				System.out.println("get other:" + clusterProc.getOther() + "me: " + clusterProc.getNodeId());
+//			}
+//		}, 25000,25000);
 	}
 
 
 	private synchronized boolean updateDegradedStatus(){
 		if((!clusterProc.isNew()) && clusterProc.isDegraded() && toForward.isEmpty() && toShare.isEmpty() && forwards.isEmpty() && shares.isEmpty() && toRemoveBackedUpToBus.isEmpty() && toRemoveBackedUpToFws.isEmpty() && localDegradedCount.get()==0 && notDegradedSet.compareAndSet(false, true)){
 			decreaseLocalDegradedCount();
-			System.out.println("se disminuye la cuenta");
+//			System.out.println("se disminuye la cuenta");
 			return true;
 		}else{
 			return false;
@@ -116,7 +116,7 @@ public class ClusterBalancer {
 			int id = forwardId.getAndIncrement();
 			int attempt=0;
 			boolean sent=false;
-			while(attempt++<3 && !sent){
+			while(attempt++<MAX_ATTEMPTS && !sent){
 				try {
 					forwardSignals(clusterProc.getOther(),Lists.newLinkedList(toForwardCopy.subList(from, to)),id);
 					sent=true;
@@ -140,7 +140,7 @@ public class ClusterBalancer {
 	}
 
 	public void forwardedSignals(int id){
-		int fs = forwards.remove(id).size();
+		forwards.remove(id).size();
 		decrementLocalDegradedCount();
 		//		System.out.println("forwarded :" + fs);
 	}
@@ -159,7 +159,7 @@ public class ClusterBalancer {
 			int id = shareId.getAndIncrement();
 			int attempt=0;
 			boolean sent=false;
-			while(attempt++<3 && !sent){
+			while(attempt++<MAX_ATTEMPTS && !sent){
 				try {
 					backupSignalsRequest(clusterProc.getNodeId(),clusterProc.getOther(),Lists.newLinkedList(toShareCopy.subList(from, to)),id);
 					sent=true;
@@ -242,13 +242,13 @@ public class ClusterBalancer {
 			Bu.addAll(toBuL);
 		}
 		toRemoveBackedUpToFws.put(id, toFw);
-		for(Address a: toRemoveBackedUpToFws.get(id).keySet()){
-			System.out.println(a + "tiene en fws: " + toRemoveBackedUpToFws.get(id).get(a).size());
-		}
+//		for(Address a: toRemoveBackedUpToFws.get(id).keySet()){
+//			System.out.println(a + "tiene en fws: " + toRemoveBackedUpToFws.get(id).get(a).size());
+//		}
 		toRemoveBackedUpToBus.put(id, toBu);
-		for(Address a: toRemoveBackedUpToBus.get(id).keySet()){
-			System.out.println(a + "tiene en bus: " + toRemoveBackedUpToBus.get(id).get(a).size());
-		}
+//		for(Address a: toRemoveBackedUpToBus.get(id).keySet()){
+//			System.out.println(a + "tiene en bus: " + toRemoveBackedUpToBus.get(id).get(a).size());
+//		}
 		return new NewNodeForwardMessage(clusterProc.getNodeId(),Fw, Bu, id);
 	}
 
@@ -281,7 +281,7 @@ public class ClusterBalancer {
 	}
 
 	private void requestForget(Address a, int id, List<Signal> signals){
-		System.out.println("se pide a " + a + "que olvide " + signals.size() + "señales"); 
+//		System.out.println("se pide a " + a + "que olvide " + signals.size() + "señales"); 
 		ForgetBackupMessage msg = new ForgetBackupMessage(id, clusterProc.getNodeId(), signals);
 		try {
 			clusterProc.send(msg, a);
@@ -329,7 +329,7 @@ public class ClusterBalancer {
 					cb.degradedFinished();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
-					System.out.println("Se agregó o quitó un nodo en modo degradado");
+//					System.out.println("Se agregó o quitó un nodo en modo degradado");
 				}
 			}
 		});
@@ -380,14 +380,14 @@ public class ClusterBalancer {
 	}
 
 	public synchronized void decrementLocalDegradedCount(){
-		System.out.println("se decrementa");
+//		System.out.println("se decrementa");
 		if(localDegradedCount.decrementAndGet() ==0){
 			//			degradedFinished();
 		};
 	}
 
 	public synchronized void incrementLocalDegradedCount(){
-		System.out.println("se incrementa");
+//		System.out.println("se incrementa");
 		localDegradedCount.incrementAndGet();
 		notDegradedSet.set(false);
 		setLocalDegraded();
@@ -444,5 +444,10 @@ public class ClusterBalancer {
 				clusterProc.add(s);
 			}
 		}
+	}
+
+
+	public void exit() {
+		timer.cancel();
 	}
 }

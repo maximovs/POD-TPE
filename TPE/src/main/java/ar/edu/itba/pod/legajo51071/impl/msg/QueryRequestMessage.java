@@ -7,6 +7,10 @@ import ar.edu.itba.pod.api.Result;
 import ar.edu.itba.pod.api.Signal;
 
 public class QueryRequestMessage extends ClusterMessage implements QueryMessage{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	int id;
 	Address from;
 	Signal signal;

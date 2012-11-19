@@ -11,7 +11,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import ar.edu.itba.pod.legajo51071.impl.ClusterSignalProcessor;
-import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
 
 /**
  * Simple server that starts an RMI registry and binds the required objects

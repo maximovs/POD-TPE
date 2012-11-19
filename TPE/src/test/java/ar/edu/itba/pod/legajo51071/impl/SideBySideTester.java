@@ -14,7 +14,6 @@ import ar.edu.itba.pod.api.SignalProcessor;
 import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
 import ar.edu.itba.pod.signal.source.RandomSource;
 import ar.edu.itba.pod.signal.source.Source;
-import ar.edu.itba.pod.signal.source.SignalBuilder.SignalFunction;
 
 /**
  * Test suite that runs the same tests agains an implementation and

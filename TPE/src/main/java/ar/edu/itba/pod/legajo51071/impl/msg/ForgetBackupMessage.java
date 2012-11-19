@@ -7,6 +7,10 @@ import org.jgroups.Address;
 import ar.edu.itba.pod.api.Signal;
 
 public class ForgetBackupMessage extends ClusterMessage{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	int id;
 	Address from;
 	List<Signal> signals;

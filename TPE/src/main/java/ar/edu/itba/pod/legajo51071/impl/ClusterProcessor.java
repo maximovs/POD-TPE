@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.concurrent.GuardedBy;
 
 
 import org.jgroups.Address;
@@ -116,7 +115,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 						balancer.timerEnabledOn();
 						//						localDegradedFinished();
 					}else if(group.size()==1){
-						System.out.println("I am the first");
+						System.out.println("I am the first node");
 						ready.countDown();
 					}
 				}else{
@@ -165,7 +164,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 					if(group.size()==1)	balancer.timerEnabledOff();
 				}
 
-				System.out.println("** view: " + new_view);
+//				System.out.println("** view: " + new_view);
 
 			}
 		});
@@ -179,13 +178,13 @@ public class ClusterProcessor extends ReceiverAdapter {
 		balancer.incrementLocalDegradedCount();
 		degradedStarted();
 		balancer.nodeLeft(left);
-		System.out.println("store and backup" + left);
+		System.out.println("store and backup: " + left);
 
 	}
 
 	public void receive(Message msg) {
 
-		System.out.println("se recibe de: " + msg.getSrc() + ": " + msg.getObject());
+//		System.out.println("se recibe de: " + msg.getSrc() + ": " + msg.getObject());
 		final Address src = msg.getSrc();
 		final ClusterMessage m = (ClusterMessage) msg.getObject();
 		if(m instanceof SyncMessage){
@@ -232,7 +231,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 					}else if(m instanceof QueryResponseMessage){
 						QueryResponseMessage message = (QueryResponseMessage) m;
 						addResult(message.getId(), message.getResult());
-						System.out.println("id query recibida: " + message.getId());
+//						System.out.println("id query recibida: " + message.getId());
 					}
 
 				}
@@ -300,7 +299,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						System.out.println(newNodeMsgsRcvd.get());
+//						System.out.println(newNodeMsgsRcvd.get());
 						if(newNodeMsgsRcvd.decrementAndGet()==0){
 							setOld();
 
@@ -337,10 +336,16 @@ public class ClusterProcessor extends ReceiverAdapter {
 	public void exit(){
 		channel.disconnect();
 		channel.close();
+		processAcks.shutdownNow();
+		processMessages.shutdownNow();
+		processQuerys.shutdownNow();
+		processSyncs.shutdownNow();
+		balancer.timerEnabledOff();
+		balancer.exit();
 	}
 
 	private void send(Message msg) throws Exception{
-		System.out.println("se envía a:" + msg.getDest() + "cont: " + msg.getObject());
+//		System.out.println("se envía a:" + msg.getDest() + "cont: " + msg.getObject());
 		channel.send(msg);
 	}
 
@@ -362,7 +367,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 
 	public void sendQueryRequest(List<Address> tos, Query q) throws Exception{
 		for(Address to:tos){
-			System.out.println("id query enviada:" + q.getId());
+//			System.out.println("id query enviada:" + q.getId());
 			Message msg = new Message(to, new QueryRequestMessage(q.getId(), getNodeId(),q.getSignal() ));
 			send(msg);
 		}
@@ -396,9 +401,9 @@ public class ClusterProcessor extends ReceiverAdapter {
 	//	}
 
 	public void degradedStarted(){
-		System.out.println("tamaño: " + group.size());
+//		System.out.println("tamaño: " + group.size());
 		if(balancer.isAlreadyDegraded()) return;
-		System.out.println("se degrada en un grupo de: " + group.size());
+//		System.out.println("se degrada en un grupo de: " + group.size());
 		this.setDegraded(true);
 		balancer.setDegradedCount(group.size());
 		try {
@@ -432,6 +437,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 	}
 	
 	public boolean systemDeg(){
+		if(!isNew() && (others==null || (others!=null && others.size() == 0)) && !addingNode.get()) return false;
 		return isNew() || (isDegraded() && others!=null) || addingNode.get() ;
 	}
 	
@@ -490,7 +496,7 @@ public class ClusterProcessor extends ReceiverAdapter {
 				Query q = new Query(to.size(), signal);
 				putQuery(q);
 				sendQueryRequest(to, q);
-				System.out.println("id query creada:" + q.getId());
+//				System.out.println("id query creada:" + q.getId());
 				q.await();
 				removeQuery(q.getId());
 				if(q.hasErrors()){

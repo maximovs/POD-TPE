@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import ar.edu.itba.pod.api.Result;
 import ar.edu.itba.pod.api.Signal;
-import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
 import ar.edu.itba.pod.signal.source.RandomSource;
 import ar.edu.itba.pod.signal.source.Source;
 

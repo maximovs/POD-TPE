@@ -4,7 +4,6 @@ import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,6 +52,7 @@ public class ClusterSignalProcessor implements SignalProcessor, SPNode{
 			if(clusterProc != null) clusterProc.exit();
 			clusterProc = null;
 			localProc.empty();
+			receivedSignals.set(0);
 	}
 
 	@Override

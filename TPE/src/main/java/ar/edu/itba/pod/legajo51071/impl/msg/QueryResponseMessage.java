@@ -6,6 +6,10 @@ import org.jgroups.Address;
 import ar.edu.itba.pod.api.Result;
 
 public class QueryResponseMessage extends ClusterMessage implements QueryMessage, AckMessage{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	int id;
 	Address from;
 	Result result;

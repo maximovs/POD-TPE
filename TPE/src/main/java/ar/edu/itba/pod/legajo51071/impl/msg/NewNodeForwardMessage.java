@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.legajo51071.impl.msg;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.jgroups.Address;

@@ -1,12 +1,13 @@
 package ar.edu.itba.pod.legajo51071.impl.msg;
 
-import java.util.List;
 
-import org.jgroups.Address;
 
-import ar.edu.itba.pod.api.Signal;
 
 public class NewNodeForwardAckMessage extends ClusterMessage implements AckMessage{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	int id;
 	public NewNodeForwardAckMessage(int id) {
 		this.id = id;

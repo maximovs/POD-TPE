@@ -56,7 +56,7 @@ public class Query {
 	public void addResult(Result res){
 		results.add(res);
 		waiting.countDown();
-		System.out.println("se hace countdown");
+//		System.out.println("se hace countdown");
 	}
 	
 	public List<Result> getResults(){

@@ -4,17 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.AlreadyBoundException;
-import java.rmi.RMISecurityManager;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import ar.edu.itba.pod.api.SPNode;
 import ar.edu.itba.pod.api.SignalProcessor;
 import ar.edu.itba.pod.legajo51071.impl.ClusterSignalProcessor;
-import ar.edu.itba.pod.legajo51071.impl.StandaloneSignalProcessor;
 
 /**
  * Simple server that starts an RMI registry and binds the required objects
